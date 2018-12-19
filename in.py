@@ -60,7 +60,7 @@ class Example(QWidget):
         self.initUI()
 
     def initUI(self):
-        self.setGeometry(300, 300, 300, 300)
+        self.setGeometry(300, 300, 400, 400)
         self.setWindowTitle('Синтезатор')
 
         self.button_1 = QPushButton(self)
@@ -72,6 +72,11 @@ class Example(QWidget):
         self.button_2.move(120, 40)
         self.button_2.setText("выбор волн")
         self.button_2.clicked.connect(self.run1)
+
+        self.button_3 = QPushButton(self)
+        self.button_3.move(200, 40)
+        self.button_3.setText("выбор длительнности звуков")
+        self.button_3.clicked.connect(self.run2)
         self.show()
 
     def run(self):
@@ -99,6 +104,18 @@ class Example(QWidget):
         if okBtnPressed:
             self.button_2.setText(i)
 
+    def run2(self):
+        i, okBtnPressed = QInputDialog.getItem(
+            self,
+            "Выберите длительности",
+            'вы можете менять длительность на кнопки - и =',
+            ('0.125', '0.25', '0.5', '1.0', '2.0'),
+            3,
+            False
+        )
+        if okBtnPressed:
+            self.button_3.setText(i)
+
     def keyPressEvent(self, event):
         SAMPLE_RATE = 44100
         #                      0       1       2      3        4       5       6
@@ -121,29 +138,29 @@ class Example(QWidget):
                         channels=2,
                         rate=SAMPLE_RATE,
                         output=True)
-        duration_tone = 1 / 2.0
-        tones = generate_tones(duration_tone)
+        self.duration_tone = 1 / 2.0
+        tones = generate_tones(self.duration_tone)
         if event.key == ord('-'):
-            duration_tone /= 2
-            print('duration_tone =', duration_tone)
-            tones = generate_tones(duration_tone)
+            self.duration_tone /= 2
+            print('duration_tone =', self.duration_tone)
+            tones = generate_tones(self.duration_tone)
         if event.key == ord('='):
-            duration_tone *= 2
-            print('duration_tone =', duration_tone)
-            tones = generate_tones(duration_tone)
+            self.duration_tone *= 2
+            print('duration_tone =', self.duration_tone)
+            tones = generate_tones(self.duration_tone)
         if event.key == ord('1'):
             freq_array /= 2
             print('freq_array =', freq_array)
-            tones = generate_tones(duration_tone)
+            tones = generate_tones(self.duration_tone)
         if event.key == ord('2'):
             freq_array *= 2
             print('freq_array =', freq_array)
-            tones = generate_tones(duration_tone)
+            tones = generate_tones(self.duration_tone)
         for (function, key) in gen_func_list:
             if key == event.key:
                 print('gen_function =', function.__name__)
                 gen_func = function
-                tones = generate_tones(duration_tone)
+                tones = generate_tones(self.duration_tone)
         for (index, key) in enumerate(key_list):
             if event.key == key:
                 key_dict[key] = True

@@ -1,4 +1,3 @@
-#!/bin/env python3
 import numpy as np
 import pyaudio as pa
 import pygame
