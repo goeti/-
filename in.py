@@ -73,7 +73,7 @@ class Writing(QTimer):
             timer = QTimer()
             timer.timeout.connect(self.play_sounds)
             print(1)
-            timer.start(times[i])
+            timer.start(times[i * 1000])
 
 
 class Example(QWidget, Writing):
