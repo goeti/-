@@ -1,4 +1,5 @@
 import sys
+import time
 
 import numpy as np
 import pyaudio as pa
@@ -55,21 +56,19 @@ class Writing(QTimer):
                         channels=2,
                         rate=SAMPLE_RATE,
                         output=True)
-        stream.write(self.sounds[self.number])
+        stream.write(Example().sounds[self.number])
         self.number += 1
 
     def play(self):
+        print(1)
         self.number = 0
-        global p, stream
-        p = pa.PyAudio()
-        stream = p.open(format=p.get_format_from_width(width=2),
-                        channels=2,
-                        rate=SAMPLE_RATE,
-                        output=True)
-        for i in range(self.sounds):
+        print(sounds)
+        for i in range(len(sounds)):
+            print(1)
             timer = QTimer()
             timer.timeout.connect(self.play_sounds)
-            timer.start(self.times[i])
+            print(1)
+            timer.start(times[i])
 
 
 class Example(QWidget, Writing):
@@ -141,10 +140,15 @@ class Example(QWidget, Writing):
         self.button_4.setText("запись")
         self.button_4.clicked.connect(self.run3)
 
-        self.button_4 = QPushButton(self)
-        self.button_4.move(120, 100)
-        self.button_4.setText("воспроизведеие")
-        self.button_4.clicked.connect(self.run4)
+        self.button_5 = QPushButton(self)
+        self.button_5.move(120, 100)
+        self.button_5.setText("воспроизведеие")
+        self.button_5.clicked.connect(self.run4)
+
+        self.button_6 = QPushButton(self)
+        self.button_6.move(20, 140)
+        self.button_6.setText("стоп")
+        self.button_6.clicked.connect(self.run5)
         self.show()
 
         self.SAMPLE_RATE = 44100
@@ -196,6 +200,7 @@ class Example(QWidget, Writing):
             False
         )
         if okBtnPressed:
+            print(1)
             self.gen_func = i
             self.tones = self.generate_tones(self.duration_tone)
 
@@ -214,16 +219,19 @@ class Example(QWidget, Writing):
             self.tones = self.generate_tones(int(self.duration_tone))
 
     def run3(self):
-        super(Example, self).start_timer(30000, 100)
+        self.time = time.time()
         self.sounds = []
         self.times = []
         self.counter1 = 0
         self.flag = 1
+        self.flag1 = 1
 
     def run4(self):
-        if self.flag == 1:
+        if self.flag1 == 1:
             super(Example, self).play()
 
+    def run5(self):
+        self.flag = 0
 
     def keyPressEvent(self, event):
         global p, stream
@@ -256,10 +264,14 @@ class Example(QWidget, Writing):
         for (index, key) in enumerate(self.key_list):
             if event.key() == key:
                 stream.write(self.tones[index])
-                if self.counter != 0:
+                if self.flag != 0:
                     self.sounds.append(self.tones[index])
-                    self.times.append(self.counter - self.counter1)
+                    self.time1 = time.time()
+                    self.times.append(self.time1 - self.time)
+                    self.time = self.time1
                     self.counter1 = self.counter
+                    print(self.times)
+                    print(self.sounds)
 
 
 if __name__ == '__main__':
