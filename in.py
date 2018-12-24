@@ -24,7 +24,7 @@ def triangle(x):
     return np.abs(x % 6 - 3) / (2 * np.pi)
 
 
-# запись звука
+# запись звука и воспроизведение
 
 
 class Writing(QTimer):
@@ -60,6 +60,11 @@ class Writing(QTimer):
         self.number += 1
 
     def play(self):
+        p = pa.PyAudio()
+        stream = p.open(format=p.get_format_from_width(width=2),
+                        channels=2,
+                        rate=SAMPLE_RATE,
+                        output=True)
         print(1)
         self.number = 0
         print(sounds)
