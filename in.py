@@ -49,31 +49,39 @@ class Writing(QTimer):
         timer.timeout.connect(handler)
         timer.start(interval)
 
+    def timer(self, time):
+        print(2)
+        c = int(self.a[0][time] * 1000)
+        timer = QTimer()
+        timer.timeout.connect(self.play_sounds())
+        timer.start(c)
+
+    def play(self):
+        self.a = Example.turn(self)
+        p = pa.PyAudio()
+        stream = p.open(format=p.get_format_from_width(width=2),
+                        channels=2,
+                        rate=SAMPLE_RATE,
+                        output=True)
+        self.number = 0
+        print(self.a[1])
+        self.timer(0)
+
     def play_sounds(self):
+        print(1)
         global p, stream
         p = pa.PyAudio()
         stream = p.open(format=p.get_format_from_width(width=2),
                         channels=2,
                         rate=SAMPLE_RATE,
                         output=True)
-        stream.write(Example().sounds[self.number])
+        stream.write(self.a[1][self.number])
         self.number += 1
+        if self.number < len(self.a[1]):
+            self.timer(self.number)
 
-    def play(self):
-        p = pa.PyAudio()
-        stream = p.open(format=p.get_format_from_width(width=2),
-                        channels=2,
-                        rate=SAMPLE_RATE,
-                        output=True)
-        print(1)
-        self.number = 0
-        print(sounds)
-        for i in range(len(sounds)):
-            print(1)
-            timer = QTimer()
-            timer.timeout.connect(self.play_sounds)
-            print(1)
-            timer.start(times[i * 1000])
+
+
 
 
 class Example(QWidget, Writing):
@@ -85,16 +93,17 @@ class Example(QWidget, Writing):
 
     def generate_sample(self, freq, duration, volume):
         self.gen_func_list = (
-            (np.sin, ord('W')),
-            (square, ord('E')),
-            (saw, ord('R')),
-            (triangle, ord('T'))
+            ('np.sin', ord('W')),
+            ('square', ord('E')),
+            ('saw', ord('R')),
+            ('triangle', ord('T'))
         )
         amplitude = np.round((2 ** 16) * volume)
         total_samples = np.round(SAMPLE_RATE * duration)
         w = 2.0 * np.pi * freq / SAMPLE_RATE
         k = np.arange(0, total_samples)
-        return np.round(amplitude * self.gen_func(k * w))
+        task = {'square': square, 'saw': saw, 'triangle': triangle, 'np.sin': np.sin}
+        return np.round(amplitude * task[self.gen_func](k * w))
 
     def generate_tones(self, duration):
         tones = []
@@ -113,12 +122,13 @@ class Example(QWidget, Writing):
         self.button_1.clicked.connect(self.run)
 
         self.flag = 0
+        self.flag1 = 0
         self.gen_func = np.sin
         self.gen_func_list = (
-            (np.sin, ord('W')),
-            (square, ord('E')),
-            (saw, ord('R')),
-            (triangle, ord('T'))
+            ('np.sin', ord('W')),
+            ('square', ord('E')),
+            ('saw', ord('R')),
+            ('triangle', ord('T'))
         )
         self.key_names = ['A', 'S', 'D', 'F', 'G', 'H', 'J']
         self.key_list = list(map(lambda x: ord(x), self.key_names))
@@ -137,8 +147,6 @@ class Example(QWidget, Writing):
         self.button_3.move(200, 40)
         self.button_3.setText("выбор длительнности звуков")
         self.button_3.clicked.connect(self.run2)
-        self.duration_tone = int(self.duration_tone)
-        self.tones = self.generate_tones(int(self.duration_tone))
 
         self.button_4 = QPushButton(self)
         self.button_4.move(20, 100)
@@ -169,17 +177,15 @@ class Example(QWidget, Writing):
                          'Первая октава': self.freq_array, 'Вторая октава': self.freq_array * 2,
                          'Третья октава': self.freq_array * 4, 'Четвёртая октава': self.freq_array * 8,
                          'Пятая октава': self.freq_array * 16}
-        self.gen_func = np.sin
+        self.gen_func = 'np.sin'
         self.gen_func_list = (
-            (np.sin, ord('W')),
-            (square, ord('E')),
-            (saw, ord('R')),
-            (triangle, ord('T'))
+            ('np.sin', ord('W')),
+            ('square', ord('E')),
+            ('saw', ord('R')),
+            ('triangle', ord('T'))
         )
         self.duration_tone = 1 / 2.0
-        global e
         self.tones = self.generate_tones(self.duration_tone)
-        e = self.tones
 
     def run(self):
         i, okBtnPressed = QInputDialog.getItem(
@@ -200,12 +206,11 @@ class Example(QWidget, Writing):
             self,
             "Выберите волну",
             'вы можете менять виды синтезируемых волн на кнопки w, e, r, t',
-            ("np.sin", "square", "saw", 'triangle'),
+            ('np.sin', 'square', 'saw', 'triangle'),
             0,
             False
         )
         if okBtnPressed:
-            print(1)
             self.gen_func = i
             self.tones = self.generate_tones(self.duration_tone)
 
@@ -215,13 +220,12 @@ class Example(QWidget, Writing):
             "Выберите длительности",
             'вы можете менять длительность на кнопки - и =',
             ('0.125', '0.25', '0.5', '1.0', '2.0'),
-            3,
+            2,
             False
         )
         if okBtnPressed:
-            self.duration_tone = i
-            self.duration_tone = int(self.duration_tone)
-            self.tones = self.generate_tones(int(self.duration_tone))
+            self.duration_tone = float(i)
+            self.tones = self.generate_tones(self.duration_tone)
 
     def run3(self):
         self.time = time.time()
@@ -232,11 +236,45 @@ class Example(QWidget, Writing):
         self.flag1 = 1
 
     def run4(self):
-        if self.flag1 == 1:
-            super(Example, self).play()
+        if (self.flag1 == 1) and (self.flag == 0):
+            self.play()
 
     def run5(self):
         self.flag = 0
+
+    def turn(self):
+        return (self.times, self.sounds)
+
+    def timer(self, time):
+        print(2)
+        c = int(self.a[0][time] * 1000)
+        timer = QTimer()
+        timer.timeout.connect(self.play_sounds())
+        timer.start(c)
+
+    def play(self):
+        self.a = self.turn()
+        p = pa.PyAudio()
+        stream = p.open(format=p.get_format_from_width(width=2),
+                        channels=2,
+                        rate=SAMPLE_RATE,
+                        output=True)
+        self.number = 0
+        print(self.a[1])
+        self.timer(0)
+
+    def play_sounds(self):
+        print(1)
+        global p, stream
+        p = pa.PyAudio()
+        stream = p.open(format=p.get_format_from_width(width=2),
+                        channels=2,
+                        rate=SAMPLE_RATE,
+                        output=True)
+        stream.write(self.a[1][self.number])
+        self.number += 1
+        if self.number < len(self.a[1]):
+            self.timer(self.number)
 
     def keyPressEvent(self, event):
         global p, stream
@@ -263,7 +301,7 @@ class Example(QWidget, Writing):
             self.tones = self.generate_tones(self.duration_tone)
         for (function, key) in self.gen_func_list:
             if event.key() == key:
-                print('gen_function =', function.__name__)
+                print('gen_function =', function)
                 self.gen_func = function
                 self.tones = self.generate_tones(self.duration_tone)
         for (index, key) in enumerate(self.key_list):
