@@ -89,6 +89,7 @@ class Example(QWidget, Writing):
         super().__init__()
         self.initUI()
 
+
     # функции генерации звука
 
     def generate_sample(self, freq, duration, volume):
@@ -162,7 +163,6 @@ class Example(QWidget, Writing):
         self.button_6.move(20, 140)
         self.button_6.setText("стоп")
         self.button_6.clicked.connect(self.run5)
-        self.show()
 
         self.SAMPLE_RATE = 44100
         #                      0       1       2      3        4       5       6
@@ -247,12 +247,10 @@ class Example(QWidget, Writing):
 
     def timer1(self, time):
         print(2)
-        c = self.a[0][time] * 1000
-        print(c)
-        self.timer = QTimer()
-        self.timer.timeout.connect(self.play_sounds())
-        self.timer.start(c)
-
+        c = (self.a[0][time] * 1000) / 2
+        print(int(c))
+        QTimer().singleShot(c, self.play_sounds)
+    
     def play(self):
         self.a = self.turn()
         p = pa.PyAudio()
@@ -274,8 +272,6 @@ class Example(QWidget, Writing):
                         output=True)
         stream.write(self.a[1][self.number])
         self.number += 1
-        self.timer.stop()
-        self.timer.deleteLater()
         if self.number < len(self.a[1]):
             self.timer1(self.number)
 
