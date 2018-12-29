@@ -49,26 +49,25 @@ class Writing(QTimer):
         timer.timeout.connect(handler)
         timer.start(interval)
 
-    def timer(self, time):
-        print(2)
-        c = int(self.a[0][time] * 1000)
-        timer = QTimer()
-        timer.timeout.connect(self.play_sounds())
-        timer.start(c)
+    # таймер
+
+    def timer1(self, time):
+        c = (self.a[0][time] * 1000) - 170
+        print(c)
+        QTimer().singleShot(c, self.play_sounds)
 
     def play(self):
         self.a = Example.turn(self)
+        global p, stream
         p = pa.PyAudio()
         stream = p.open(format=p.get_format_from_width(width=2),
                         channels=2,
                         rate=SAMPLE_RATE,
                         output=True)
         self.number = 0
-        print(self.a[1])
-        self.timer(0)
+        self.timer1(0)
 
     def play_sounds(self):
-        print(1)
         global p, stream
         p = pa.PyAudio()
         stream = p.open(format=p.get_format_from_width(width=2),
@@ -78,17 +77,16 @@ class Writing(QTimer):
         stream.write(self.a[1][self.number])
         self.number += 1
         if self.number < len(self.a[1]):
-            self.timer(self.number)
+            self.timer1(self.number)
 
 
-
+# основной интерфейс
 
 
 class Example(QWidget, Writing):
     def __init__(self):
         super().__init__()
         self.initUI()
-
 
     # функции генерации звука
 
@@ -237,43 +235,13 @@ class Example(QWidget, Writing):
 
     def run4(self):
         if (self.flag1 == 1) and (self.flag == 0):
-            self.play()
+            super(Example, self).play()
 
     def run5(self):
         self.flag = 0
 
     def turn(self):
         return (self.times, self.sounds)
-
-    def timer1(self, time):
-        print(2)
-        c = (self.a[0][time] * 1000) / 2
-        print(int(c))
-        QTimer().singleShot(c, self.play_sounds)
-    
-    def play(self):
-        self.a = self.turn()
-        p = pa.PyAudio()
-        stream = p.open(format=p.get_format_from_width(width=2),
-                        channels=2,
-                        rate=SAMPLE_RATE,
-                        output=True)
-        self.number = 0
-        print(self.a[1])
-        self.timer1(0)
-
-    def play_sounds(self):
-        print(3)
-        global p, stream
-        p = pa.PyAudio()
-        stream = p.open(format=p.get_format_from_width(width=2),
-                        channels=2,
-                        rate=SAMPLE_RATE,
-                        output=True)
-        stream.write(self.a[1][self.number])
-        self.number += 1
-        if self.number < len(self.a[1]):
-            self.timer1(self.number)
 
     def keyPressEvent(self, event):
         global p, stream
@@ -312,8 +280,6 @@ class Example(QWidget, Writing):
                     self.times.append(self.time1 - self.time)
                     self.time = self.time1
                     self.counter1 = self.counter
-                    print(self.times)
-                    print(self.sounds)
 
 
 if __name__ == '__main__':
