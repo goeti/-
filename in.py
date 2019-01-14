@@ -37,7 +37,6 @@ class Writing(QTimer):
         self.count = 10000
 
     def start_timer(self, count=1, interval=100):
-        print(1)
 
         def handler():
             self.counter += 100
@@ -52,8 +51,11 @@ class Writing(QTimer):
     # таймер
 
     def timer1(self, time):
-        c = (self.a[0][time] * 1000) - 170
-        QTimer().singleShot(c, self.play_sounds)
+        c = (self.a[0][time] * 1000) - 180
+        if c > 0:
+            QTimer().singleShot(c, self.play_sounds)
+        else:
+            self.play_sounds()
 
     def play(self):
         self.a = Example.turn(self)
