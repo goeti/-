@@ -53,7 +53,6 @@ class Writing(QTimer):
 
     def timer1(self, time):
         c = (self.a[0][time] * 1000) - 170
-        print(c)
         QTimer().singleShot(c, self.play_sounds)
 
     def play(self):
